@@ -3,60 +3,60 @@ import pandas as pd
 
 
 def mostrar_kpis(df):
-    """
-    Exibe os principais indicadores do dashboard.
-    """
+    """Exibe os principais indicadores do dashboard."""
+    # Indicadores
 
     total_jogadores = len(df)
 
-    # Idade média
-    if "idade" in df.columns:
-        idade_media = round(pd.to_numeric(df["idade"], errors="coerce").mean(), 1)
-    else:
-        idade_media = 0
+    idade_media = round(
+        pd.to_numeric(df["idade"], errors="coerce").mean(),
+        1
+    )
 
-    # Total de gols
-    if "gols" in df.columns:
-        total_gols = int(pd.to_numeric(df["gols"], errors="coerce").fillna(0).sum())
-    elif "gols_clube" in df.columns:
-        total_gols = int(pd.to_numeric(df["gols_clube"], errors="coerce").fillna(0).sum())
-    else:
-        total_gols = 0
+    total_gols = int(
+        pd.to_numeric(df["gols_clube"], errors="coerce")
+        .fillna(0)
+        .sum()
+    )
 
-    # Total de assistências
-    if "assistencias" in df.columns:
-        total_assistencias = int(
-            pd.to_numeric(df["assistencias"], errors="coerce").fillna(0).sum()
-        )
-    elif "assistencias_clube" in df.columns:
-        total_assistencias = int(
-            pd.to_numeric(df["assistencias_clube"], errors="coerce").fillna(0).sum()
-        )
-    else:
-        total_assistencias = 0
+    total_partidas = int(
+        pd.to_numeric(df["partidas_clube"], errors="coerce")
+        .fillna(0)
+        .sum()
+    )
 
-    col1, col2, col3, col4 = st.columns(4)
+    total_paises = df["pais"].nunique()
+
+    # Exibição
+
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         st.metric(
-            label="👥 Jogadores",
-            value=total_jogadores
+            "👥 Total de Jogadores",
+            total_jogadores
         )
 
     with col2:
         st.metric(
-            label="🎂 Idade Média",
-            value=f"{idade_media:.1f}"
+            "🌍 Total de Seleções",
+            total_paises
         )
 
     with col3:
         st.metric(
-            label="⚽ Gols",
-            value=total_gols
+            "🎂 Idade Média",
+            idade_media
         )
 
     with col4:
         st.metric(
-            label="🎯 Assistências",
-            value=total_assistencias
+            "⚽ Total de Gols",
+            total_gols
+        )
+
+    with col5:
+        st.metric(
+            "🏃 Total dePartidas",
+            total_partidas
         )

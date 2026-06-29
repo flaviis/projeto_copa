@@ -2,7 +2,6 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
-
 # 1 - Jogadores por posição
 
 def grafico_posicoes(df):
@@ -11,33 +10,44 @@ def grafico_posicoes(df):
         df.groupby("posicao")
         .size()
         .reset_index(name="Quantidade")
+        .sort_values("Quantidade", ascending=False)
     )
 
     fig = px.bar(
         dados,
         x="posicao",
         y="Quantidade",
+        color="Quantidade",
         title="Jogadores por Posição"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-
 # 2 - Top 10 Artilheiros
 
 def grafico_top_gols(df):
 
-    top = (
+    dados = (
         df.sort_values("gols_clube", ascending=False)
         .head(10)
     )
 
     fig = px.bar(
-        top,
+        dados,
         x="gols_clube",
         y="nome",
         orientation="h",
-        title="Top 10 Artilheiros"
+        title="Ranking dos 10 Maiores Artilheiros",
+        text="gols_clube"
+    )
+
+    fig.update_layout(
+        yaxis=dict(categoryorder="total ascending"),
+        showlegend=False
+    )
+
+    fig.update_traces(
+        textposition="outside"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -46,22 +56,32 @@ def grafico_top_gols(df):
 
 def grafico_top_assistencias(df):
 
-    top = (
+    dados = (
         df.sort_values("assistencias_clube", ascending=False)
         .head(10)
     )
 
     fig = px.bar(
-        top,
+        dados,
         x="assistencias_clube",
         y="nome",
         orientation="h",
-        title="Top 10 Assistências"
+        title="Ranking dos 10 Maiores Assistentes",
+        text="assistencias_clube"
+    )
+
+    fig.update_layout(
+        yaxis=dict(categoryorder="total ascending"),
+        showlegend=False
+    )
+
+    fig.update_traces(
+        textposition="outside"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-# 4 - Histograma de Idade
+# 4 - Distribuição das Idades
 
 def grafico_idades(df):
 
@@ -69,17 +89,17 @@ def grafico_idades(df):
         df,
         x="idade",
         nbins=10,
-        title="Distribuição das Idades"
+        color="posicao",
+        title="Distribuição dos Jogadores por Faixa Etária"
     )
 
     st.plotly_chart(fig, use_container_width=True)
-
 
 # 5 - Clubes com mais jogadores
 
 def grafico_clubes(df):
 
-    clubes = (
+    dados = (
         df.groupby("clube")
         .size()
         .reset_index(name="Quantidade")
@@ -88,47 +108,96 @@ def grafico_clubes(df):
     )
 
     fig = px.bar(
-        clubes,
+        dados,
         x="clube",
         y="Quantidade",
-        title="Clubes com Mais Jogadores"
+        color="Quantidade",
+        title="Clubes com Maior Número de Jogadores Convocados"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
+# 6 - Desempenho Médio da Seleção
 
-# 6 - Média dos atributos
+def grafico_desempenho_selecao(df):
 
-def grafico_atributos(df):
+    selecao = st.selectbox(
+        "Selecione uma seleção",
+        sorted(df["pais"].unique()),
+        key="desempenho_selecao",
+        label_visibility="collapsed",
+    )
 
-    atributos = [
-        "ritmo",
-        "finalizacao",
-        "passe",
-        "drible",
-        "defesa",
-        "fisico"
-    ]
+    dados = df[df["pais"] == selecao]
 
-    existentes = [c for c in atributos if c in df.columns]
+    atributos = {
+        "Ritmo": dados["ritmo"].mean(),
+        "Finalização": dados["finalizacao"].mean(),
+        "Passe": dados["passe"].mean(),
+        "Drible": dados["drible"].mean(),
+        "Defesa": dados["defesa"].mean(),
+        "Físico": dados["fisico"].mean(),
+    }
 
-    if not existentes:
-        st.warning("Nenhuma coluna de atributos encontrada.")
-        return
+    fig = px.line_polar(
+        r=list(atributos.values()),
+        theta=list(atributos.keys()),
+        line_close=True,
+        title=f"Desempenho Médio da Seleção - {selecao}"
+    )
 
-    medias = (
-        df[existentes]
+    fig.update_traces(fill="toself")
+
+    fig.update_layout(
+        template="plotly_white",
+        height=420
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key="grafico_desempenho_selecao"
+    )
+
+
+# 7 - Média de Gols por Posição
+
+def grafico_media_gols_posicao(df):
+
+    dados = (
+        df.groupby("posicao")["gols_clube"]
         .mean()
         .reset_index()
+        .sort_values("gols_clube", ascending=False)
     )
-
-    medias.columns = ["Atributo", "Média"]
 
     fig = px.bar(
-        medias,
-        x="Atributo",
-        y="Média",
-        title="Média dos Atributos dos Jogadores"
+        dados,
+        x="gols_clube",
+        y="posicao",
+        orientation="h",
+        text="gols_clube",
+        title="Média de Gols por Posição",
+        labels={
+            "gols_clube": "Média de Gols",
+            "posicao": "Posição"
+        }
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    fig.update_traces(
+        texttemplate="%{text:.1f}",
+        textposition="outside"
+    )
+
+    fig.update_layout(
+        template="plotly_white",
+        height=420,
+        showlegend=False,
+        yaxis=dict(categoryorder="total ascending")
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key="grafico_media_gols_posicao"
+    )

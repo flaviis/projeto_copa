@@ -1,18 +1,32 @@
 import streamlit as st
 
+
 def aplicar_filtros(df):
+    """Aplica os filtros do dashboard."""
 
     st.sidebar.title("Filtros")
 
+    # Seleção
+
+    paises = sorted(df["pais"].dropna().unique())
+
     pais = st.sidebar.selectbox(
         "Seleção",
-        ["Todas"] + sorted(df["pais"].unique())
+        options=["Todas"] + paises,
+        index=0
     )
+
+    # Posição
+
+    posicoes = sorted(df["posicao"].dropna().unique())
 
     posicao = st.sidebar.multiselect(
         "Posição",
-        sorted(df["posicao"].unique())
+        options=posicoes,
+        placeholder="Selecione uma ou mais posições"
     )
+
+    # Aplicação dos filtros
 
     df_filtrado = df.copy()
 
@@ -20,6 +34,8 @@ def aplicar_filtros(df):
         df_filtrado = df_filtrado[df_filtrado["pais"] == pais]
 
     if posicao:
-        df_filtrado = df_filtrado[df_filtrado["posicao"].isin(posicao)]
-
+        df_filtrado = df_filtrado[
+            df_filtrado["posicao"].isin(posicao)
+        ]
+        
     return df_filtrado

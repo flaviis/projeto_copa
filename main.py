@@ -1,5 +1,4 @@
 import streamlit as st
-from card_jogador.card_jogador import mostrar_jogador
 
 from utils.carregar_dados import carregar_dados
 from utils.filtros import aplicar_filtros
@@ -11,101 +10,106 @@ from utils.graficos import (
     grafico_top_assistencias,
     grafico_idades,
     grafico_clubes,
-    grafico_atributos,
+    grafico_media_gols_posicao,
+    grafico_desempenho_selecao,
 )
 
 # CONFIGURAÇÃO DA PÁGINA
 
 st.set_page_config(
-    page_title="Dashboard Copa do Mundo",
+    page_title="Dashboard Copa do Mundo 2026",
     page_icon="🏆",
     layout="wide"
 )
 
+# CABEÇALHO
 
-# TÍTULO
+st.title("🏆 Dashboard Analítico - Copa do Mundo 2026")
+st.markdown("""Dashboard desenvolvido para a disciplina de **Banco de Dados II**.""")
 
-st.title("🏆 Dashboard Copa do Mundo")
-st.markdown("### Análise Estatística dos Jogadores das Seleções")
+st.divider()
 
-
-# =====================================================
 # CARREGAR DADOS
-# =====================================================
 
 df = carregar_dados()
 
-
-# =====================================================
 # FILTROS
-# =====================================================
 
-df_filtrado = aplicar_filtros(df)
+df = aplicar_filtros(df)
 
-
-# =====================================================
 # KPIs
-# =====================================================
 
-mostrar_kpis(df_filtrado)
+mostrar_kpis(df)
 
-st.divider()
+st.markdown("<br>", unsafe_allow_html=True)
 
+# PERFIL DOS JOGADORES
 
-# =====================================================
-# PRIMEIRA LINHA
-# =====================================================
-
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    grafico_posicoes(df_filtrado)
+    grafico_posicoes(df)
 
 with col2:
-    grafico_top_gols(df_filtrado)
+    grafico_idades(df)
 
+st.markdown("<br>", unsafe_allow_html=True)
 
-# =====================================================
-# SEGUNDA LINHA
-# =====================================================
+# DESEMPENHO OFENSIVO
 
-col3, col4 = st.columns(2)
+col3, col4 = st.columns(2, gap="large")
 
 with col3:
-    grafico_top_assistencias(df_filtrado)
+    grafico_top_gols(df)
 
 with col4:
-    grafico_idades(df_filtrado)
+    grafico_top_assistencias(df)
 
+st.markdown("<br>", unsafe_allow_html=True)
 
-# =====================================================
-# TERCEIRA LINHA
-# =====================================================
+# CLUBES
 
-col5, col6 = st.columns(2)
+st.markdown("<br>", unsafe_allow_html=True)
+
+grafico_clubes(df)
+
+# SELEÇÕES
+
+col5, col6, = st.columns(2, gap="large")
 
 with col5:
-    grafico_clubes(df_filtrado)
+    grafico_media_gols_posicao(df)
 
 with col6:
-    grafico_atributos(df_filtrado)
+    grafico_desempenho_selecao(df)
+    
+# TABELA
 
+st.subheader("Tabela de Dados dos Jogadores")
 
-st.divider()
+colunas = [
+    "nome",
+    "pais",
+    "posicao",
+    "idade",
+    "clube",
+    "gols_clube",
+    "assistencias_clube",
+    "partidas_clube",
+]
 
+st.dataframe(
+    df[colunas],
+    use_container_width=True,
+    hide_index=True
+)
 
-# =====================================================
-# CARD DO JOGADOR
-# =====================================================
-
-st.subheader("👤 Perfil do Jogador")
-
-mostrar_jogador(df_filtrado)
-
-
-# =====================================================
 # RODAPÉ
-# =====================================================
 
 st.markdown("---")
-st.caption("Projeto Final - Banco de Dados II | IFNMG - Campus Almenara")
+
+st.caption(
+    """Projeto Final - Banco de Dados II
+    IFNMG Campus Almenara
+    Dashboard desenvolvido em Streamlit."""
+)
